@@ -1,0 +1,1 @@
+/home/chatelo/Downloads/axum_auth/target/debug/axum-auth-service: /home/chatelo/Downloads/axum_auth/src/auth/handlers.rs /home/chatelo/Downloads/axum_auth/src/auth/mod.rs /home/chatelo/Downloads/axum_auth/src/auth/models.rs /home/chatelo/Downloads/axum_auth/src/auth/service.rs /home/chatelo/Downloads/axum_auth/src/auth/utils.rs /home/chatelo/Downloads/axum_auth/src/main.rs
