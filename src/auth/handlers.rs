@@ -7,6 +7,7 @@ use axum::{
 };
 use serde::Deserialize;
 use sqlx::PgPool;
+//todo serde json -> simd json
 
 use super::models::{LoginUser, RegisterUser};
 use super::service::{get_user_by_email, register_user, verify_email_token};
