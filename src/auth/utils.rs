@@ -1,9 +1,9 @@
-use bcrypt::{hash, verify, DEFAULT_COST};
-use jsonwebtoken::{encode, Header, EncodingKey};
-use lettre::{Message, SmtpTransport, Transport};
-use lettre::transport::smtp::authentication::Credentials;
-use rand::Rng;
 use super::models::Claims;
+use bcrypt::{hash, verify, DEFAULT_COST};
+use jsonwebtoken::{encode, EncodingKey, Header};
+use lettre::transport::smtp::authentication::Credentials;
+use lettre::{Message, SmtpTransport, Transport};
+use rand::Rng;
 
 pub fn hash_password(password: &str) -> Result<String, bcrypt::BcryptError> {
     hash(password, DEFAULT_COST)
@@ -24,15 +24,23 @@ pub fn create_jwt(user_id: &str) -> Result<String, jsonwebtoken::errors::Error> 
         exp: expiration as usize,
     };
     let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-    encode(&Header::default(), &claims, &EncodingKey::from_secret(secret.as_ref()))
+    encode(
+        &Header::default(),
+        &claims,
+        &EncodingKey::from_secret(secret.as_ref()),
+    )
 }
 
-pub fn send_email(to: &str, subject: &str, body: &str) -> Result<(), lettre::transport::smtp::Error> {
+pub fn send_email(
+    to: &str,
+    subject: &str,
+    body: &str,
+) -> Result<(), lettre::transport::smtp::Error> {
     let from = std::env::var("FROM_EMAIL").expect("FROM_EMAIL must be set");
     let smtp_host = std::env::var("SMTP_HOST").expect("SMTP_HOST must be set");
     let smtp_username = std::env::var("SMTP_USERNAME").expect("SMTP_USERNAME must be set");
     let smtp_password = std::env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set");
-    
+
     let email = Message::builder()
         .from(from.parse().unwrap())
         .to(to.parse().unwrap())
@@ -42,9 +50,7 @@ pub fn send_email(to: &str, subject: &str, body: &str) -> Result<(), lettre::tra
 
     let creds = Credentials::new(smtp_username, smtp_password);
 
-    let mailer = SmtpTransport::relay(&smtp_host)?
-        .credentials(creds)
-        .build();
+    let mailer = SmtpTransport::relay(&smtp_host)?.credentials(creds).build();
 
     mailer.send(&email)?;
     Ok(())

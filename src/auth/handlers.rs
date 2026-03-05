@@ -25,10 +25,7 @@ pub fn create_router() -> Router<PgPool> {
         .route("/verify-email", get(verify_email))
 }
 
-async fn register(
-    State(pool): State<PgPool>,
-    Json(payload): Json<RegisterUser>,
-) -> Response {
+async fn register(State(pool): State<PgPool>, Json(payload): Json<RegisterUser>) -> Response {
     match register_user(&pool, payload).await {
         Ok(user) => (StatusCode::CREATED, Json(user)).into_response(),
         Err(e) => (
@@ -64,11 +61,9 @@ async fn login(State(pool): State<PgPool>, Json(payload): Json<LoginUser>) -> Re
 
     if verify_password(&payload.password, &user.password_hash).unwrap_or(false) {
         match create_jwt(&user.id.to_string()) {
-            Ok(token) => (
-                StatusCode::OK,
-                Json(serde_json::json!({ "token": token })),
-            )
-                .into_response(),
+            Ok(token) => {
+                (StatusCode::OK, Json(serde_json::json!({ "token": token }))).into_response()
+            }
             Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         }
     } else {

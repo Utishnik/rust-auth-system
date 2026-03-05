@@ -1,11 +1,11 @@
+use super::models::{RegisterUser, User};
+use super::utils::{generate_token, hash_password, send_email};
 use sqlx::PgPool;
-use super::models::{User, RegisterUser};
-use super::utils::{hash_password, generate_token, send_email};
 
 pub async fn register_user(pool: &PgPool, new_user: RegisterUser) -> Result<User, sqlx::Error> {
     let password_hash = hash_password(&new_user.password).unwrap();
     let verification_token = generate_token();
-    
+
     let user = sqlx::query_as::<_, User>(
         "INSERT INTO users (username, email, password_hash, phone_number, verification_token) VALUES ($1, $2, $3, $4, $5) RETURNING *"
     )
@@ -17,10 +17,16 @@ pub async fn register_user(pool: &PgPool, new_user: RegisterUser) -> Result<User
     .fetch_one(pool)
     .await?;
 
-    let verification_link = format!("http://localhost:8080/auth/verify-email?token={}", verification_token);
-    let email_body = format!("Please verify your email by clicking on the following link: {}", verification_link);
+    let verification_link = format!(
+        "http://localhost:8080/auth/verify-email?token={}",
+        verification_token
+    );
+    let email_body = format!(
+        "Please verify your email by clicking on the following link: {}",
+        verification_link
+    );
     send_email(&user.email, "Email Verification", &email_body).unwrap();
-    
+
     Ok(user)
 }
 
