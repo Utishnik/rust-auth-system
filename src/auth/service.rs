@@ -1,8 +1,8 @@
 use super::models::{RegisterUser, User};
 use super::utils::{generate_token, hash_password, send_email};
-use sqlx::PgPool;
+use sqlx::{PgPool, SqlitePool};
 
-pub async fn register_user(pool: &PgPool, new_user: RegisterUser) -> Result<User, sqlx::Error> {
+pub async fn register_user(pool: &SqlitePool, new_user: RegisterUser) -> Result<User, sqlx::Error> {
     let password_hash = hash_password(&new_user.password).unwrap();
     let verification_token = generate_token();
 
@@ -30,14 +30,14 @@ pub async fn register_user(pool: &PgPool, new_user: RegisterUser) -> Result<User
     Ok(user)
 }
 
-pub async fn get_user_by_email(pool: &PgPool, email: &str) -> Result<Option<User>, sqlx::Error> {
+pub async fn get_user_by_email(pool: &SqlitePool, email: &str) -> Result<Option<User>, sqlx::Error> {
     sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
         .bind(email)
         .fetch_optional(pool)
         .await
 }
 
-pub async fn verify_email_token(pool: &PgPool, token: &str) -> Result<bool, sqlx::Error> {
+pub async fn verify_email_token(pool: &SqlitePool, token: &str) -> Result<bool, sqlx::Error> {
     let result = sqlx::query!(
         "UPDATE users SET is_email_verified = true, verification_token = NULL WHERE verification_token = $1 AND is_email_verified = false",
         token

@@ -6,7 +6,7 @@ use axum::{
     Json, Router,
 };
 use serde::Deserialize;
-use sqlx::PgPool;
+use sqlx::{SqlitePool, Sqlite};
 //todo serde json -> simd json
 
 use super::models::{LoginUser, RegisterUser};
@@ -18,14 +18,14 @@ pub struct VerifyEmailQuery {
     token: String,
 }
 
-pub fn create_router() -> Router<PgPool> {
+pub fn create_router() -> Router<SqlitePool> {
     Router::new()
         .route("/register", post(register))
         .route("/login", post(login))
         .route("/verify-email", get(verify_email))
 }
 
-async fn register(State(pool): State<PgPool>, Json(payload): Json<RegisterUser>) -> Response {
+async fn register(State(pool): State<SqlitePool>, Json(payload): Json<RegisterUser>) -> Response {
     match register_user(&pool, payload).await {
         Ok(user) => (StatusCode::CREATED, Json(user)).into_response(),
         Err(e) => (
@@ -36,7 +36,7 @@ async fn register(State(pool): State<PgPool>, Json(payload): Json<RegisterUser>)
     }
 }
 
-async fn login(State(pool): State<PgPool>, Json(payload): Json<LoginUser>) -> Response {
+async fn login(State(pool): State<SqlitePool>, Json(payload): Json<LoginUser>) -> Response {
     let user_result = get_user_by_email(&pool, &payload.email).await;
 
     let user = match user_result {
@@ -76,7 +76,7 @@ async fn login(State(pool): State<PgPool>, Json(payload): Json<LoginUser>) -> Re
 }
 
 async fn verify_email(
-    State(pool): State<PgPool>,
+    State(pool): State<SqlitePool>,
     Query(params): Query<VerifyEmailQuery>,
 ) -> Response {
     match verify_email_token(&pool, &params.token).await {
