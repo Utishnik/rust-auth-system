@@ -38,7 +38,7 @@ pub async fn get_user_by_email(pool: &SqlitePool, email: &str) -> Result<Option<
 }
 
 pub async fn verify_email_token(pool: &SqlitePool, token: &str) -> Result<bool, sqlx::Error> {
-    let result = sqlx::query!(
+    let result: sqlx::sqlite::SqliteQueryResult = sqlx::query!(
         "UPDATE users SET is_email_verified = true, verification_token = NULL WHERE verification_token = $1 AND is_email_verified = false",
         token
     )

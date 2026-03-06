@@ -30,7 +30,7 @@ async fn register(State(pool): State<SqlitePool>, Json(payload): Json<RegisterUs
         Ok(user) => (StatusCode::CREATED, Json(user)).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(serde_json::json!({ "error": e.to_string() })),
+            Json(simd_json::json!({ "error": e.to_string() })),
         )
             .into_response(),
     }
@@ -44,7 +44,7 @@ async fn login(State(pool): State<SqlitePool>, Json(payload): Json<LoginUser>) -
         Ok(None) => {
             return (
                 StatusCode::UNAUTHORIZED,
-                Json(serde_json::json!({"error": "Invalid email or password"})),
+                Json(simd_json::json!({"error": "Invalid email or password"})),
             )
                 .into_response()
         }
@@ -54,7 +54,7 @@ async fn login(State(pool): State<SqlitePool>, Json(payload): Json<LoginUser>) -
     if !user.is_email_verified {
         return (
             StatusCode::UNAUTHORIZED,
-            Json(serde_json::json!({"error": "Email not verified"})),
+            Json(simd_json::json!({"error": "Email not verified"})),
         )
             .into_response();
     }
@@ -62,14 +62,14 @@ async fn login(State(pool): State<SqlitePool>, Json(payload): Json<LoginUser>) -
     if verify_password(&payload.password, &user.password_hash).unwrap_or(false) {
         match create_jwt(&user.id.to_string()) {
             Ok(token) => {
-                (StatusCode::OK, Json(serde_json::json!({ "token": token }))).into_response()
+                (StatusCode::OK, Json(simd_json::json!({ "token": token }))).into_response()
             }
             Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         }
     } else {
         (
             StatusCode::UNAUTHORIZED,
-            Json(serde_json::json!({"error": "Invalid email or password"})),
+            Json(simd_json::json!({"error": "Invalid email or password"})),
         )
             .into_response()
     }
@@ -82,17 +82,17 @@ async fn verify_email(
     match verify_email_token(&pool, &params.token).await {
         Ok(true) => (
             StatusCode::OK,
-            Json(serde_json::json!({"message": "Email verified successfully"})),
+            Json(simd_json::json!({"message": "Email verified successfully"})),
         )
             .into_response(),
         Ok(false) => (
             StatusCode::BAD_REQUEST,
-            Json(serde_json::json!({"error": "Invalid or expired verification token"})),
+            Json(simd_json::json!({"error": "Invalid or expired verification token"})),
         )
             .into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(serde_json::json!({"error": e.to_string()})),
+            Json(simd_json::json!({"error": e.to_string()})),
         )
             .into_response(),
     }
