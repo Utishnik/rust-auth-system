@@ -12,10 +12,10 @@ async fn main() {
 
     let database_url: String = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool: sqlx::Pool<sqlx::Sqlite> = SqlitePoolOptions::new()
-    .max_connections(5)
-    .connect(&database_url)
-    .await
-    .expect("Failed to create pool.");
+        .max_connections(5)
+        .connect(&database_url)
+        .await
+        .expect("Failed to create pool.");
 
     let cors: CorsLayer = CorsLayer::new().allow_origin(Any).allow_methods(Any);
 

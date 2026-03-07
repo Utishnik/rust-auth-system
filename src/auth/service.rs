@@ -6,7 +6,7 @@ pub async fn register_user(pool: &SqlitePool, new_user: RegisterUser) -> Result<
     let password_hash = hash_password(&new_user.password).unwrap();
     let verification_token = generate_token();
 
-    let user = sqlx::query_as::<_, User>(
+    let user: User = sqlx::query_as::<_, User>(
         "INSERT INTO users (username, email, password_hash, phone_number, verification_token) VALUES ($1, $2, $3, $4, $5) RETURNING *"
     )
     .bind(new_user.username)
@@ -17,20 +17,26 @@ pub async fn register_user(pool: &SqlitePool, new_user: RegisterUser) -> Result<
     .fetch_one(pool)
     .await?;
 
-    let verification_link = format!(
-        "http://localhost:8080/auth/verify-email?token={}",
-        verification_token
-    );
-    let email_body = format!(
-        "Please verify your email by clicking on the following link: {}",
-        verification_link
-    );
-    send_email(&user.email, "Email Verification", &email_body).unwrap();
+    #[cfg(feature = "use-sqlite")]
+    {
+        let verification_link: String = format!(
+            "http://localhost:8080/auth/verify-email?token={}",
+            verification_token
+        );
+        let email_body: String = format!(
+            "Please verify your email by clicking on the following link: {}",
+            verification_link
+        );
+        send_email(&user.email, "Email Verification", &email_body).unwrap();
+    }
 
     Ok(user)
 }
 
-pub async fn get_user_by_email(pool: &SqlitePool, email: &str) -> Result<Option<User>, sqlx::Error> {
+pub async fn get_user_by_email(
+    pool: &SqlitePool,
+    email: &str,
+) -> Result<Option<User>, sqlx::Error> {
     sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
         .bind(email)
         .fetch_optional(pool)

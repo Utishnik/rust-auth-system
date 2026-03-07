@@ -6,7 +6,7 @@ use axum::{
     Json, Router,
 };
 use serde::Deserialize;
-use sqlx::{SqlitePool, Sqlite};
+use sqlx::{Sqlite, SqlitePool};
 //todo serde json -> simd json
 
 use super::models::{LoginUser, RegisterUser};

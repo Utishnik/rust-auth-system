@@ -36,10 +36,10 @@ pub fn send_email(
     subject: &str,
     body: &str,
 ) -> Result<(), lettre::transport::smtp::Error> {
-    let from = std::env::var("FROM_EMAIL").expect("FROM_EMAIL must be set");
-    let smtp_host = std::env::var("SMTP_HOST").expect("SMTP_HOST must be set");
-    let smtp_username = std::env::var("SMTP_USERNAME").expect("SMTP_USERNAME must be set");
-    let smtp_password = std::env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set");
+    let from: String = std::env::var("FROM_EMAIL").expect("FROM_EMAIL must be set");
+    let smtp_host: String = std::env::var("SMTP_HOST").expect("SMTP_HOST must be set");
+    let smtp_username: String = std::env::var("SMTP_USERNAME").expect("SMTP_USERNAME must be set");
+    let smtp_password: String = std::env::var("SMTP_PASSWORD").expect("SMTP_PASSWORD must be set");
 
     let email = Message::builder()
         .from(from.parse().unwrap())
@@ -48,9 +48,9 @@ pub fn send_email(
         .body(String::from(body))
         .unwrap();
 
-    let creds = Credentials::new(smtp_username, smtp_password);
+    let creds: Credentials = Credentials::new(smtp_username, smtp_password);
 
-    let mailer = SmtpTransport::relay(&smtp_host)?.credentials(creds).build();
+    let mailer: SmtpTransport = SmtpTransport::relay(&smtp_host)?.credentials(creds).build();
 
     mailer.send(&email)?;
     Ok(())
